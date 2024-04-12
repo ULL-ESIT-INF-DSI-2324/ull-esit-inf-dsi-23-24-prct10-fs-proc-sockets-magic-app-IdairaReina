@@ -1,12 +1,14 @@
 import fs from 'fs';
 import chalk from 'chalk';
 import { CardData } from './card.js';
+import * as path from 'path';
 
 /**
  * Class to manage the file system for user cards
  */
 export class FileManager {
   private static instance: FileManager;
+  private userDataDirectory = 'users';
 
   private constructor() {}
 
@@ -77,6 +79,99 @@ public addCard(userId: string, cardData: CardData, callback: (error: string | un
       }
   });
 }
+
+public deleteCard(userId: string, cardId: number, callback: (error: string | undefined, result: string | undefined) => void): void {
+  const cardFilePath = `./users/${userId}/${cardId}.json`;
+
+  fs.unlink(cardFilePath, (err) => {
+      if (err) {
+          callback(`Error al eliminar la carta: ${err.message}`, undefined);
+      } else {
+          callback(undefined, `Carta eliminada correctamente del usuario ${userId}`);
+      }
+  });
+}
+
+public modifyCard(userId: string, cardId: number, newCardData: CardData, callback: (error: string | undefined, result: string | undefined) => void): void {
+    const userDir = path.join(this.userDataDirectory, userId);
+    const filePath = path.join(userDir, `${cardId}.json`);
+
+    fs.readFile(filePath, 'utf-8', (err, data) => {
+        if (err) {
+            callback('No se encontró la carta especificada.', undefined);
+        } else {
+            try {
+                const existingCardData: CardData = JSON.parse(data);
+                const modifiedCardData: CardData = { ...existingCardData, ...newCardData };
+
+                fs.writeFile(filePath, JSON.stringify(modifiedCardData, null, 2), (err) => {
+                    if (err) {
+                        callback('Error al modificar la carta.', undefined);
+                    } else {
+                        callback(undefined, 'Carta modificada correctamente.');
+                    }
+                });
+            } catch (error) {
+                callback('Error al procesar los datos de la carta.', undefined);
+            }
+        }
+    });
+}
+
+public listCard(userId: string, callback: (error: string | undefined, result: CardData[] | undefined) => void): void {
+    const userDir = path.join(this.userDataDirectory, userId);
+
+    fs.readdir(userDir, (err, files) => {
+        if (err) {
+            callback('Error al listar las cartas del usuario.', undefined);
+        } else {
+            const cardFiles: string[] = files.filter(file => file.endsWith('.json'));
+            const cards: CardData[] = [];
+
+            // Leer cada archivo de carta
+            cardFiles.forEach(file => {
+                const filePath = path.join(userDir, file);
+                //const cardId = parseInt(path.parse(file).name); // Obtener el ID de la carta del nombre del archivo
+
+                fs.readFile(filePath, 'utf-8', (err, data) => {
+                    if (err) {
+                        console.error('Error al leer el archivo:', err);
+                    } else {
+                        try {
+                            const cardData: CardData = JSON.parse(data);
+                            cards.push(cardData);
+                        } catch (error) {
+                            console.error('Error al procesar los datos de la carta:', error);
+                        }
+                    }
+
+                    // Verificar si se han leído todas las cartas
+                    if (cards.length === cardFiles.length) {
+                        callback(undefined, cards);
+                    }
+                });
+            });
+        }
+    });
+}
+
+public showCard(userId: string, cardId: number, callback: (error: string | undefined, result: CardData | undefined) => void): void {
+    const cardFilePath = `./users/${userId}/${cardId}.json`;
+
+    fs.readFile(cardFilePath, 'utf-8', (err, data) => {
+        if (err) {
+            callback('Error al mostrar la carta.', undefined);
+        } else {
+            try {
+                const cardData: CardData = JSON.parse(data);
+                callback(undefined, cardData);
+            } catch (error) {
+                callback('Error al procesar los datos de la carta.', undefined);
+            }
+        }
+    });
+}
+
 
 
 }

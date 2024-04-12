@@ -2,12 +2,13 @@ import * as net from 'net';
 import fs from 'fs';
 import { Card, CardData } from './card.js';
 import * as path from 'path';
-import {FileManager} from './filemanager.js'
+import {FileManager} from './filemanager.js';
 
 
 // Directorio base para los datos de los usuarios
 const userDataDirectory = 'users';
-const userCardsMap: Map<string, Card[]> = new Map();
+export const userCardsMap: Map<string, Card[]> = new Map();
+
 
 // Función para cargar todas las cartas de un usuario existente
 async function loadAllUserCards(): Promise<void> {
@@ -95,8 +96,6 @@ const server = net.createServer((socket) => {
                          console.error('Error al añadir la carta:', error);
                          const responseError = { status: 'Error', message: error };
                          const responseDataError = JSON.stringify(responseError);
-                         const responseDataLengthError = Buffer.byteLength(responseDataError);
-                         socket.write(Buffer.from(responseDataLengthError.toString()));
                          socket.write(responseDataError);
                          } else {
                              console.log('Carta añadida correctamente:', result);
@@ -109,16 +108,76 @@ const server = net.createServer((socket) => {
                         });
                             break;
                         case 'modify':
-                            // Implementar lógica para modificar una carta
+                            fileManager.modifyCard(userId, request.cardId, request.modifiedData, (error, result) => {
+                                if (error) {
+                                    // Si hay un error, registrar y enviar respuesta de error al cliente
+                                    console.error('Error al modificar la carta:', error);
+                                    const responseError = { status: 'Error', message: error };
+                                    const responseDataError = JSON.stringify(responseError);
+                                    socket.write(responseDataError);
+                                } else {
+                                    // Si se modificó correctamente, registrar y enviar respuesta de éxito al cliente
+                                    console.log('Carta modificada correctamente:', result);
+                                    const responseSuccess = { status: 'OK', message: result };
+                                    const responseDataSuccess = JSON.stringify(responseSuccess);
+                                    socket.write(responseDataSuccess);
+                                }
+                            });
                             break;
                         case 'delete':
-                            // Implementar lógica para eliminar una carta
+                            // Llamada a la función deleteCard del FileManager
+                        fileManager.deleteCard(userId, request.cardData.id, (error, result) => {
+                          if (error) {
+                         // Si hay un error, registrar y enviar respuesta de error al cliente
+                         console.error('Error al eliminar la carta:', error);
+                         const responseError = { status: 'Error', message: error };
+                         const responseDataError = JSON.stringify(responseError);
+                         socket.write(responseDataError);
+                         } else {
+                           // Si se eliminó correctamente, registrar y enviar respuesta de éxito al cliente
+                           console.log('Carta eliminada correctamente:', result);
+                           const responseSuccess = { status: 'OK', message: result };
+                           const responseDataSuccess = JSON.stringify(responseSuccess);
+                           socket.write(responseDataSuccess);
+                           socket.end();
+                         }
+                        });
                             break;
                         case 'list':
-                            // Implementar lógica para listar las cartas de un usuario
+                            fileManager.listCard(userId, (error, result) => {
+                                if (error) {
+                                    const responseError = { status: 'Error', message: error };
+                                    const responseDataError = JSON.stringify(responseError);
+                                    const responseDataLengthError = Buffer.byteLength(responseDataError);
+                                    socket.write(Buffer.from(responseDataLengthError.toString()));
+                                    socket.write(responseDataError);
+                                } else {
+                                    const responseSuccess = { status: 'OK', message: result };
+                                    const responseDataSuccess = JSON.stringify(responseSuccess);
+                                    const responseDataLengthSuccess = Buffer.byteLength(responseDataSuccess);
+                                    socket.write(Buffer.from(responseDataLengthSuccess.toString()));
+                                    socket.write(responseDataSuccess);
+                                }
+                            });
                             break;
                         case 'show':
-                            // Implementar lógica para mostrar una carta específica de un usuario
+                            fileManager.showCard(userId, request.cardId, (error, result) => {
+                                if (error) {
+                                    console.error('Error:', error);
+                                    // Enviar respuesta de error al cliente
+                                    const responseError = { status: 'Error', message: error };
+                                    const responseDataError = JSON.stringify(responseError);
+                                    const responseDataLengthError = Buffer.byteLength(responseDataError);
+                                    socket.write(Buffer.from(responseDataLengthError.toString()));
+                                    socket.write(responseDataError);
+                                } else {
+                                    // Enviar respuesta con los datos de la carta al cliente
+                                    const responseData = JSON.stringify(result);
+                                    const responseDataLength = Buffer.byteLength(responseData);
+                                    socket.write(Buffer.from(responseDataLength.toString()));
+                                    socket.write(responseData);
+                                }
+                            });
                             break;
                         default:
                             console.error('Acción no válida');
@@ -151,7 +210,7 @@ const server = net.createServer((socket) => {
 });
 
 // Escuchar en un puerto específico
-const PORT = 3000;
+const PORT = 60300;
 server.listen(PORT, () => {
     console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
