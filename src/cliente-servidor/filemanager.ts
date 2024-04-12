@@ -4,7 +4,7 @@ import { CardData } from './card.js';
 import * as path from 'path';
 
 /**
- * Class to manage the file system for user cards
+ * Clase que gestiona las operaciones relacionadas con el manejo de archivos.
  */
 export class FileManager {
   private static instance: FileManager;
@@ -12,10 +12,10 @@ export class FileManager {
 
   private constructor() {}
 
-  /**
-   * Method to get the instance of the FileManager
-   * @returns the instance of the FileManager
-   */
+ /**
+     * Método para obtener la instancia del FileManager.
+     * @returns La instancia del FileManager.
+     */
   public static getInstance(): FileManager {
     if (!FileManager.instance) {
       FileManager.instance = new FileManager();
@@ -24,12 +24,11 @@ export class FileManager {
   }
 
   /**
-   * Method to add a card to the collection of a user
-   * @param userId The ID of the user
-   * @param cardData The data of the card to add
-   * @param callback Callback function to handle the result or error
-   */
- // Método para agregar una carta al sistema de archivos del usuario
+     * Agrega una carta al sistema de archivos del usuario.
+     * @param userId - ID del usuario.
+     * @param cardData - Datos de la carta a agregar.
+     * @param callback - Función de retorno de llamada que maneja errores y resultados.
+     */
 public addCard(userId: string, cardData: CardData, callback: (error: string | undefined, result: string | undefined) => void): void {
   // Se define la ruta del directorio del usuario
   const userDirectory = `./users/${userId}`;
@@ -80,6 +79,12 @@ public addCard(userId: string, cardData: CardData, callback: (error: string | un
   });
 }
 
+/**
+     * Elimina una carta del sistema de archivos del usuario.
+     * @param userId - ID del usuario.
+     * @param cardId - ID de la carta a eliminar.
+     * @param callback - Función de retorno de llamada que maneja errores y resultados.
+     */
 public deleteCard(userId: string, cardId: number, callback: (error: string | undefined, result: string | undefined) => void): void {
   const cardFilePath = `./users/${userId}/${cardId}.json`;
 
@@ -92,6 +97,13 @@ public deleteCard(userId: string, cardId: number, callback: (error: string | und
   });
 }
 
+/**
+     * Modifica una carta en el sistema de archivos del usuario.
+     * @param userId - ID del usuario.
+     * @param cardId - ID de la carta a modificar.
+     * @param newCardData - Nuevos datos de la carta.
+     * @param callback - Función de retorno de llamada que maneja errores y resultados.
+     */
 public modifyCard(userId: string, cardId: number, newCardData: CardData, callback: (error: string | undefined, result: string | undefined) => void): void {
     const userDir = path.join(this.userDataDirectory, userId);
     const filePath = path.join(userDir, `${cardId}.json`);
@@ -118,6 +130,11 @@ public modifyCard(userId: string, cardId: number, newCardData: CardData, callbac
     });
 }
 
+ /**
+     * Lista todas las cartas del usuario.
+     * @param userId - ID del usuario.
+     * @param callback - Función de retorno de llamada que maneja errores y resultados.
+     */
 public listCard(userId: string, callback: (error: string | undefined, result: CardData[] | undefined) => void): void {
     const userDir = path.join(this.userDataDirectory, userId);
 
@@ -155,6 +172,13 @@ public listCard(userId: string, callback: (error: string | undefined, result: Ca
     });
 }
 
+ /**
+     * Muestra una carta específica del usuario.
+     * @param userId - ID del usuario.
+     * @param cardId - ID de la carta a mostrar.
+     * @param callback - Función de retorno de llamada que maneja errores y resultados.
+     */
+
 public showCard(userId: string, cardId: number, callback: (error: string | undefined, result: CardData | undefined) => void): void {
     const cardFilePath = `./users/${userId}/${cardId}.json`;
 
@@ -171,8 +195,6 @@ public showCard(userId: string, cardId: number, callback: (error: string | undef
         }
     });
 }
-
-
 
 }
 

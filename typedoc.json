@@ -1,6 +1,9 @@
 {
     "entryPoints": [
-      "./src/basicFunctions.ts"
+      "./src/cliente-servidor/card.ts",
+      "./src/cliente-servidor/client.ts",
+      "./src/cliente-servidor/server.ts",
+      "./src/cliente-servidor/filemanager.ts"
     ],
     "out": "./docs"
 }

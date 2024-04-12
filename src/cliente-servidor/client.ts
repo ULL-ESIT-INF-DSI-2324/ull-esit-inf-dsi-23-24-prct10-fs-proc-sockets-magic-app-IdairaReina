@@ -343,6 +343,18 @@ client.connect(60300, 'localhost', () => {
 
 let responseData: string = '';
 
+/**
+ * Callback para manejar datos recibidos del servidor.
+ * @callback DataReceivedCallback
+ * @param {string} data - Los datos recibidos del servidor.
+ */
+
+/**
+ * Maneja los eventos de datos recibidos y cierre de conexión en el cliente.
+ * @param {net.Socket} client - El socket del cliente.
+ * @param {DataReceivedCallback} onDataReceived - Callback para manejar los datos recibidos.
+ */
+
 client.on('data', (data) => {
 
         // Concatenar los datos de respuesta
@@ -366,6 +378,10 @@ client.on('data', (data) => {
             client.end();
  
 });
+
+/**
+ * Maneja el evento de cierre de conexión en el cliente.
+ */
 
 client.on('close', () => {
     console.log('Conexión cerrada');

@@ -10,7 +10,9 @@ const userDataDirectory = 'users';
 export const userCardsMap: Map<string, Card[]> = new Map();
 
 
-// Función para cargar todas las cartas de un usuario existente
+/**
+ * Carga todas las cartas de los usuarios existentes en memoria.
+ */
 async function loadAllUserCards(): Promise<void> {
     try {
         const userDirectories = await fs.promises.readdir(userDataDirectory);
@@ -44,7 +46,12 @@ loadAllUserCards()
         console.error('Error al cargar las cartas de usuario:', error);
     });
 
-// Función para cargar una carta desde un archivo JSON de manera asíncrona
+
+/**
+ * Carga una carta desde un archivo JSON de manera asíncrona.
+ * @param {string} filePath - Ruta del archivo JSON.
+ * @returns {Promise<Card>} - Promesa que resuelve con la carta cargada.
+ */
 function loadCardFromFileAsync(filePath: string): Promise<Card> {
     return new Promise((resolve, reject) => {
         fs.readFile(filePath, 'utf-8', (err, data) => {
