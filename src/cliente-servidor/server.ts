@@ -115,41 +115,39 @@ const server = net.createServer((socket) => {
                         });
                             break;
                         case 'modify':
-                            fileManager.modifyCard(userId, request.cardId, request.modifiedData, (error, result) => {
-                                if (error) {
-                                    // Si hay un error, registrar y enviar respuesta de error al cliente
-                                    console.error('Error al modificar la carta:', error);
-                                    const responseError = { status: 'Error', message: error };
-                                    const responseDataError = JSON.stringify(responseError);
-                                    socket.write(responseDataError);
-                                } else {
-                                    // Si se modificó correctamente, registrar y enviar respuesta de éxito al cliente
-                                    console.log('Carta modificada correctamente:', result);
-                                    const responseSuccess = { status: 'OK', message: result };
-                                    const responseDataSuccess = JSON.stringify(responseSuccess);
-                                    socket.write(responseDataSuccess);
-                                }
+                            fileManager.modifyCard(userId, request.cardId, request.modifiedData)
+                            .then((result) => {
+                                console.log('Carta modificada correctamente:', result);
+                                const responseSuccess = { status: 'OK', message: result };
+                                const responseDataSuccess = JSON.stringify(responseSuccess);
+                                socket.write(responseDataSuccess);
+                            })
+                            .catch((error) => {
+                                console.error('Error al modificar la carta:', error);
+                                const responseError = { status: 'Error', message: error };
+                                const responseDataError = JSON.stringify(responseError);
+                                socket.write(responseDataError);
                             });
-                            break;
+                        break;
                         case 'delete':
-                            // Llamada a la función deleteCard del FileManager
-                        fileManager.deleteCard(userId, request.cardData.id, (error, result) => {
-                          if (error) {
-                         // Si hay un error, registrar y enviar respuesta de error al cliente
-                         console.error('Error al eliminar la carta:', error);
-                         const responseError = { status: 'Error', message: error };
-                         const responseDataError = JSON.stringify(responseError);
-                         socket.write(responseDataError);
-                         } else {
-                           // Si se eliminó correctamente, registrar y enviar respuesta de éxito al cliente
-                           console.log('Carta eliminada correctamente:', result);
-                           const responseSuccess = { status: 'OK', message: result };
-                           const responseDataSuccess = JSON.stringify(responseSuccess);
-                           socket.write(responseDataSuccess);
-                           socket.end();
-                         }
-                        });
-                            break;
+                            fileManager.deleteCard(userId, request.cardData.id)
+                            .then((result) => {
+                                // Si se eliminó correctamente, registrar y enviar respuesta de éxito al cliente
+                                console.log('Carta eliminada correctamente:', result);
+                                const responseSuccess = { status: 'OK', message: result };
+                                const responseDataSuccess = JSON.stringify(responseSuccess);
+                                socket.write(responseDataSuccess);
+                                socket.end();
+                            })
+                            .catch((error) => {
+                                // Si hay un error, registrar y enviar respuesta de error al cliente
+                                console.error('Error al eliminar la carta:', error);
+                                const responseError = { status: 'Error', message: error };
+                                const responseDataError = JSON.stringify(responseError);
+                                socket.write(responseDataError);
+                                socket.end();
+                            });
+                        break;
                         case 'list':
                             fileManager.listCard(userId, (error, result) => {
                                 if (error) {

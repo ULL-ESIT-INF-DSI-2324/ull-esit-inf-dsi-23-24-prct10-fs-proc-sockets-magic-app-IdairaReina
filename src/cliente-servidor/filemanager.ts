@@ -9,8 +9,13 @@ import * as path from 'path';
 export class FileManager {
   private static instance: FileManager;
   private userDataDirectory = 'users';
+  //constructor(private userDataDirectory: string) {}
 
   private constructor() {}
+
+  public static create(): FileManager {
+    return new FileManager();
+}
 
  /**
      * Método para obtener la instancia del FileManager.
@@ -79,13 +84,8 @@ public addCard(userId: string, cardData: CardData, callback: (error: string | un
   });
 }
 
-/**
-     * Elimina una carta del sistema de archivos del usuario.
-     * @param userId - ID del usuario.
-     * @param cardId - ID de la carta a eliminar.
-     * @param callback - Función de retorno de llamada que maneja errores y resultados.
-     */
-public deleteCard(userId: string, cardId: number, callback: (error: string | undefined, result: string | undefined) => void): void {
+
+/* public deleteCard(userId: string, cardId: number, callback: (error: string | undefined, result: string | undefined) => void): void {
   const cardFilePath = `./users/${userId}/${cardId}.json`;
 
   fs.unlink(cardFilePath, (err) => {
@@ -95,6 +95,25 @@ public deleteCard(userId: string, cardId: number, callback: (error: string | und
           callback(undefined, `Carta eliminada correctamente del usuario ${userId}`);
       }
   });
+} */
+/**
+     * Elimina una carta del sistema de archivos del usuario.
+     * @param userId - ID del usuario.
+     * @param cardId - ID de la carta a eliminar.
+     * @returns Promise 
+     */
+public deleteCard(userId: string, cardId: number): Promise<string> {
+    const cardFilePath = path.join(this.userDataDirectory, userId, `${cardId}.json`);
+
+    return new Promise((resolve, reject) => {
+        fs.unlink(cardFilePath, (err) => {
+            if (err) {
+                reject(`Error al eliminar la carta: ${err.message}`);
+            } else {
+                resolve(`Carta eliminada correctamente del usuario ${userId}`);
+            }
+        });
+    });
 }
 
 /**
@@ -102,9 +121,34 @@ public deleteCard(userId: string, cardId: number, callback: (error: string | und
      * @param userId - ID del usuario.
      * @param cardId - ID de la carta a modificar.
      * @param newCardData - Nuevos datos de la carta.
-     * @param callback - Función de retorno de llamada que maneja errores y resultados.
+     * @returns Promisa
      */
-public modifyCard(userId: string, cardId: number, newCardData: CardData, callback: (error: string | undefined, result: string | undefined) => void): void {
+
+public async modifyCard(userId: string, cardId: number, newCardData: CardData): Promise<string> {
+    const filePath = path.join(this.userDataDirectory, userId, `${cardId}.json`);
+
+    return new Promise((resolve, reject) => {
+        fs.promises.readFile(filePath, 'utf-8')
+            .then(data => {
+                const existingCardData: CardData = JSON.parse(data);
+                const modifiedCardData: CardData = { ...existingCardData, ...newCardData };
+
+                return fs.promises.writeFile(filePath, JSON.stringify(modifiedCardData, null, 2));
+            })
+            .then(() => {
+                resolve('Carta modificada correctamente.');
+            })
+            .catch(error => {
+                if (error.code === 'ENOENT') {
+                    reject(new Error('No se encontró la carta especificada.'));
+                } else {
+                    reject(new Error('Error al modificar la carta.'));
+                }
+            });
+    });
+}
+
+/* public modifyCard(userId: string, cardId: number, newCardData: CardData, callback: (error: string | undefined, result: string | undefined) => void): void {
     const userDir = path.join(this.userDataDirectory, userId);
     const filePath = path.join(userDir, `${cardId}.json`);
 
@@ -128,7 +172,7 @@ public modifyCard(userId: string, cardId: number, newCardData: CardData, callbac
             }
         }
     });
-}
+} */
 
  /**
      * Lista todas las cartas del usuario.
